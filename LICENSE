@@ -1,0 +1,21 @@
+ProTracker 4.1
+
+ProTracker (C) 1990 Lars Hamre, 1992-93 CryptoBurners, 1994-98 Tom Beyer,
+Oliver Ickler. 4.1 additions (C) 2026 Akustikrausch (Andreas Wendorf). The
+original parts stay with their authors; no claim is made on them.
+
+Tom Beyer opened the ProTracker 4 source on Aminet
+(mus/edit/PT4_Beta2_src.lha) under this condition:
+
+  "Using this source code is allowed as long as the names of *all*
+  developers are visible in the about requester of the executable."
+
+ProTracker 4.1 keeps that condition: whoever builds on this source keeps
+the names of all developers visible in the about box of the program.
+ProTracker 3.15 was released by CryptoBurners as public domain.
+
+Free, non-commercial hobby project. Free to copy and share as long as all
+names stay in the about box. Not for sale.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE AUTHORS
+ARE NOT RESPONSIBLE FOR ANY LOSS OF DATA OR OTHER DAMAGE.

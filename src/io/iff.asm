@@ -1,0 +1,348 @@
+pt_FileHeaderRead:
+	MOVEA.L	(dat_0849,PC),A0
+	ADDQ.L	#8,A0
+	LEA	(dat_0832,PC),A1
+	MOVEQ	#31,D7
+pt_083A:
+	MOVEQ	#0,D0
+	MOVE.B	(A0)+,D0
+	AND.B	#$f0,D0
+	LSL.W	#4,D0
+	MOVE.B	(A0)+,D0
+	AND.W	#$0ff0,D0
+	MOVEQ	#0,D1
+	MOVE.B	(A0)+,D1
+	LSR.B	#4,D1
+	AND.B	#$0f,D1
+	OR.B	D1,D0
+	MOVE.W	D0,(A1)+
+	DBF	D7,pt_083A
+pt_083B:
+	RTS
+pt_FileParseLoop:
+	LEA	(dat_0830,PC),A2
+	MOVEQ	#5,D7
+	MOVE.L	(dat_MemAllocSize,PC),D6
+	MOVEQ	#0,D0
+	MOVE.W	(dat_FileIOStatus,PC),D0
+	MULU	(dat_ModuleTimeout,PC),D0
+pt_083D:
+	MOVE.L	D6,(A2)+
+	ADD.L	D0,D6
+	DBF	D7,pt_083D
+	LEA	(dat_0830,PC),A2
+	MOVEA.L	(dat_084A,PC),A0
+	LEA	(4,A0),A0
+	MOVE.L	(A0),D7
+	MOVEA.L	A0,A3
+	ADDA.L	D7,A3
+	LEA	(2,A3),A3
+	LEA	(4,A0),A0
+	MOVE.W	(dat_IFFParsePtr,PC),D2
+pt_083E:
+	CMPA.L	A3,A0
+	BGT.S	pt_083B
+	MOVEQ	#0,D3
+pt_083F:
+	MOVE.L	D3,D4
+	LSL.W	#2,D4
+	MOVEA.L	(0,A2,D4.W),A5
+	BSR.S	pt_0840
+	MOVE.L	A5,(0,A2,D4.W)
+	ADDQ.W	#1,D3
+	CMP.W	D2,D3
+	BLT.S	pt_083F
+	MOVEA.L	(dat_FileInfoPtr,PC),A5
+	ANDI.B	#$01,(17,A5)
+	BEQ.S	pt_083E
+	LEA	(dat_084F,PC),A5
+	BSR.S	pt_0840
+	BRA.S	pt_083E
+pt_0840:
+	MOVE.L	D2,-(A7)
+	MOVE.W	(dat_FileIOStatus,PC),D2
+pt_0841:
+	CMPA.L	A3,A0
+	BGT.S	pt_0847
+	TST.W	D2
+	BEQ.S	pt_0847
+	MOVEQ	#0,D0
+	TST.W	dat_084C
+	BNE.S	pt_0842
+	MOVE.W	(dat_FileIOStatus,PC),D0
+	SUBQ.W	#1,D0
+	BRA.S	pt_0843
+pt_0842:
+	MOVE.B	(A0)+,D0
+	BMI.S	pt_0845
+	AND.W	#$007f,D0
+pt_0843:
+	SUB.W	D0,D2
+	SUBQ.W	#1,D2
+pt_0844:
+	MOVE.B	(A0)+,(A5)+
+	DBF	D0,pt_0844
+	BRA.S	pt_0841
+pt_0845:
+	NEG.B	D0
+	AND.W	#$007f,D0
+	MOVE.B	(A0)+,D1
+	SUB.W	D0,D2
+	SUBQ.W	#1,D2
+pt_0846:
+	MOVE.B	D1,(A5)+
+	DBF	D0,pt_0846
+	BRA.S	pt_0841
+pt_0847:
+	MOVE.L	(A7)+,D2
+	RTS
+dat_FileInfoPtr:
+	DS.L	1
+dat_0849:
+	DS.L	1
+dat_084A:
+	DS.L	1
+dat_IFFParsePtr:
+	DS.L	1
+dat_084C:
+	DS.L	1
+dat_FileIOStatus:
+	DS.W	1
+dat_FileIOBufPtr:
+	DS.L	1
+dat_084F:
+	DS.L	32
+dat_FileHeaderPtr:
+	DS.L	1
+pt_LoadAllocBuf:
+	MOVEA.L	dat_AllocBufPtr,A1
+	MOVE.L	dat_SampleDataPtr2,D0
+	MOVEA.L	ABSEXECBASE.W,A6
+	JSR	(-210,A6)
+	CLR.L	dat_AllocBufPtr
+	CLR.L	dat_SampleDataPtr1
+	RTS
+pt_CheckAllocBuf:
+	TST.L	dat_AllocBufPtr
+	BNE.S	pt_CheckAllocBuf
+	MOVE.L	A0,dat_SampleDataPtr1
+	MOVE.L	(4,A0),D0
+	MOVE.L	D0,dat_SampleDataPtr2
+	MOVE.L	(dat_DiskOpViewMode,PC),D1
+	MOVEA.L	ABSEXECBASE.W,A6
+	JSR	(-198,A6)
+	TST.L	D0
+	BNE.S	pt_0853
+	BRA.W	pt_SetupPaletteMode
+pt_0853:
+	MOVE.L	D0,dat_AllocBufPtr
+	MOVEA.L	ABSEXECBASE.W,A6
+	MOVEA.L	dat_SampleDataPtr1,A0
+	MOVEA.L	dat_AllocBufPtr,A1
+	MOVE.L	dat_SampleDataPtr2,D0
+	JSR	(-624,A6)
+	MOVEA.L	dat_AllocBufPtr,A0
+	BSR.S	pt_0854
+	MOVEA.L	dat_AllocBufPtr,A0
+	RTS
+pt_0854:
+	MOVEM.L	D0-D7/A0-A6,-(A7)
+	MOVEA.L	A0,A3
+	MOVEA.L	A0,A4
+	TST.L	(A0)+
+	ADDA.L	(A0)+,A4
+	ADDA.L	(A0)+,A3
+	MOVEA.L	A3,A2
+	MOVE.L	(A2)+,-(A0)
+	MOVE.L	(A2)+,-(A0)
+	MOVE.L	(A2)+,-(A0)
+	MOVE.L	(A2)+,D2
+	MOVE.W	(A2)+,D3
+	BMI.S	pt_0855
+	SUBQ.L	#1,A3
+pt_0855:
+	LEA	(-28,A7),A7
+	MOVEA.L	A7,A1
+	MOVEQ	#6,D0
+pt_0856:
+	MOVE.L	(A2)+,(A1)+
+	DBF	D0,pt_0856
+	MOVEA.L	A7,A1
+	BRA.S	pt_0857
+	DC.L	$70004e75
+pt_0857:
+	TST.L	D2
+	BEQ.S	pt_0859
+pt_0858:
+	MOVE.B	-(A3),-(A4)
+	SUBQ.L	#1,D2
+	BNE.S	pt_0858
+pt_0859:
+	CMPA.L	A4,A0
+	BCS.S	pt_085B
+	LEA	(28,A7),A7
+	MOVEQ	#-1,D0
+	CMPA.L	A3,A0
+	BEQ.S	pt_085A
+	MOVEQ	#0,D0
+pt_085A:
+	MOVEM.L	(A7)+,D0-D7/A0-A6
+	TST.L	D0
+	RTS
+pt_085B:
+	ADD.B	D3,D3
+	BNE.S	pt_085C
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_085C:
+	BCC.S	pt_0868
+	ADD.B	D3,D3
+	BNE.S	pt_085D
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_085D:
+	BCC.S	pt_0867
+	ADD.B	D3,D3
+	BNE.S	pt_085E
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_085E:
+	BCC.S	pt_0866
+	ADD.B	D3,D3
+	BNE.S	pt_085F
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_085F:
+	BCC.S	pt_0865
+	MOVEQ	#0,D4
+	ADD.B	D3,D3
+	BNE.S	pt_0860
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0860:
+	BCC.S	pt_0861
+	MOVE.B	-(A3),D4
+	MOVEQ	#3,D0
+	SUBQ.B	#1,D4
+	BRA.S	pt_DecodeBits
+pt_0861:
+	ADD.B	D3,D3
+	BNE.S	pt_0862
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0862:
+	ADDX.B	D4,D4
+	ADD.B	D3,D3
+	BNE.S	pt_0863
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0863:
+	ADDX.B	D4,D4
+	ADD.B	D3,D3
+	BNE.S	pt_0864
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0864:
+	ADDX.B	D4,D4
+	ADDQ.B	#5,D4
+	MOVEQ	#3,D0
+	BRA.S	pt_DecodeBits
+pt_0865:
+	MOVEQ	#4,D4
+	MOVEQ	#3,D0
+	BRA.S	pt_DecodeBits
+pt_0866:
+	MOVEQ	#3,D4
+	MOVEQ	#2,D0
+	BRA.S	pt_DecodeBits
+pt_0867:
+	MOVEQ	#2,D4
+	MOVEQ	#1,D0
+	BRA.S	pt_DecodeBits
+pt_0868:
+	MOVEQ	#1,D4
+	MOVEQ	#0,D0
+pt_DecodeBits:
+	MOVEQ	#0,D5
+	MOVE.W	D0,D1
+	ADD.B	D3,D3
+	BNE.S	pt_086A
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_086A:
+	BCC.S	pt_086D
+	ADD.B	D3,D3
+	BNE.S	pt_086B
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_086B:
+	BCC.S	pt_086C
+	MOVE.B	(dat_0877,PC,D0.W),D5
+	ADDQ.B	#8,D0
+	BRA.S	pt_086D
+pt_086C:
+	MOVEQ	#2,D5
+	ADDQ.B	#4,D0
+pt_086D:
+	MOVE.B	(dat_0878,PC,D0.W),D0
+pt_086E:
+	ADD.B	D3,D3
+	BNE.S	pt_086F
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_086F:
+	ADDX.W	D2,D2
+	SUBQ.B	#1,D0
+	BNE.S	pt_086E
+	ADD.W	D5,D2
+	MOVEQ	#0,D5
+	MOVEA.L	D5,A2
+	MOVE.W	D1,D0
+	ADD.B	D3,D3
+	BNE.S	pt_0870
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0870:
+	BCC.S	pt_0873
+	ADD.W	D1,D1
+	ADD.B	D3,D3
+	BNE.S	pt_0871
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0871:
+	BCC.S	pt_0872
+	MOVEA.W	(8,A1,D1.W),A2
+	ADDQ.B	#8,D0
+	BRA.S	pt_0873
+pt_0872:
+	MOVEA.W	(0,A1,D1.W),A2
+	ADDQ.B	#4,D0
+pt_0873:
+	MOVE.B	(16,A1,D0.W),D0
+pt_0874:
+	ADD.B	D3,D3
+	BNE.S	pt_0875
+	MOVE.B	-(A3),D3
+	ADDX.B	D3,D3
+pt_0875:
+	ADDX.L	D5,D5
+	SUBQ.B	#1,D0
+	BNE.S	pt_0874
+	ADDQ.W	#1,A2
+	ADDA.L	D5,A2
+	ADDA.L	A4,A2
+pt_0876:
+	MOVE.B	-(A2),-(A4)
+	DBF	D4,pt_0876
+	BRA.W	pt_0857
+dat_0877:
+	DC.L	$060a0a12
+dat_0878:
+	DC.L	$01010101,$02030304,$0405070e
+	DS.L	2
+dat_AllocBufPtr:
+	DS.L	1
+dat_SampleDataPtr1:
+	DS.L	1
+dat_SampleDataPtr2:
+	DS.L	1
